@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Management System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:30px;
+}
+
+.container{
+    width:1100px;
+    background:#fff;
+    border-radius:15px;
+    padding:30px;
+    box-shadow:0 10px 35px rgba(0,0,0,.3);
+}
+
+h1{
+    text-align:center;
+    color:#1565C0;
+    margin-bottom:25px;
+}
+
+.form{
+    display:grid;
+    grid-template-columns:2fr 1fr 2fr auto;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+input{
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+button{
+    border:none;
+    color:white;
+    padding:12px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    transition:.3s;
+}
+
+.save{
+    background:#1565C0;
+}
+
+.save:hover{
+    background:#0D47A1;
+}
+
+.search-section{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.search{
+    background:#6A1B9A;
+}
+
+.search:hover{
+    background:#4A148C;
+}
+
+.show{
+    background:#00897B;
+}
+
+.show:hover{
+    background:#00695C;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#1565C0;
+    color:white;
+}
+
+th,td{
+    padding:15px;
+    text-align:center;
+}
+
+tbody tr:nth-child(even){
+    background:#f4f4f4;
+}
+
+tbody tr:hover{
+    background:#E3F2FD;
+}
+
+.edit{
+    background:#43A047;
+}
+
+.edit:hover{
+    background:#2E7D32;
+}
+
+.delete{
+    background:#E53935;
+}
+
+.delete:hover{
+    background:#B71C1C;
+}
+
+.footer{
+    text-align:center;
+    margin-top:20px;
+    color:gray;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Employee Management System</h1>
+
+<input type="hidden" id="id">
+
+<div class="form">
+
+<input type="text" id="name" placeholder="Employee Name">
+
+<input type="number" id="age" placeholder="Age">
+
+<input type="text" id="city" placeholder="City">
+
+<button class="save" onclick="saveEmployee()">Save</button>
+
+</div>
+
+<div class="search-section">
+
+<input type="number" id="searchId" placeholder="Search Employee By ID">
+
+<button class="search" onclick="searchEmployee()">Search</button>
+
+<button class="show" onclick="loadEmployees()">Show All</button>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+<th>Name</th>
+<th>Age</th>
+<th>City</th>
+<th>Edit</th>
+<th>Delete</th>
+
+</tr>
+
+</thead>
+
+<tbody id="employeeTable">
+
+</tbody>
+
+</table>
+
+<div class="footer">
+
+Spring Boot + MySQL CRUD Application
+
+</div>
+
+</div>
+
+<script>
+
+const API="http://localhost:8081/employee";
+
+loadEmployees();
+
+function loadEmployees(){
+
+fetch(API)
+
+.then(response=>response.json())
+
+.then(data=>{
+
+let rows="";
+
+data.forEach(emp=>{
+
+rows+=`
+
+<tr>
+
+<td>${emp.id}</td>
+
+<td>${emp.name}</td>
+
+<td>${emp.age}</td>
+
+<td>${emp.city}</td>
+
+<td>
+
+<button class="edit"
+
+onclick="editEmployee(${emp.id},
+
+'${emp.name}',
+
+${emp.age},
+
+'${emp.city}')">
+
+Edit
+
+</button>
+
+</td>
+
+<td>
+
+<button class="delete"
+
+onclick="deleteEmployee(${emp.id})">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("employeeTable").innerHTML=rows;
+
+})
+
+.catch(error=>console.log(error));
+
+}
+
+function saveEmployee(){
+
+let id=document.getElementById("id").value;
+
+let employee={
+
+name:document.getElementById("name").value,
+
+age:document.getElementById("age").value,
+
+city:document.getElementById("city").value
+
+};
+
+if(id==""){
+
+fetch(API,{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify(employee)
+
+})
+
+.then(()=>{
+
+alert("Employee Saved Successfully");
+
+clearForm();
+
+loadEmployees();
+
+});
+
+}
+
+else{
+
+employee.id=id;
+
+fetch(API+"/"+id,{
+
+method:"PUT",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify(employee)
+
+})
+
+.then(()=>{
+
+alert("Employee Updated Successfully");
+
+clearForm();
+
+loadEmployees();
+
+});
+
+}
+
+}
+
+function editEmployee(id,name,age,city){
+
+document.getElementById("id").value=id;
+
+document.getElementById("name").value=name;
+
+document.getElementById("age").value=age;
+
+document.getElementById("city").value=city;
+
+window.scrollTo({
+
+top:0,
+
+behavior:"smooth"
+
+});
+
+}
+
+function deleteEmployee(id){
+
+if(confirm("Are you sure you want to delete?")){
+
+fetch(API+"/"+id,{
+
+method:"DELETE"
+
+})
+
+.then(()=>{
+
+alert("Employee Deleted");
+
+loadEmployees();
+
+});
+
+}
+
+}
+
+function searchEmployee(){
+
+let id=document.getElementById("searchId").value;
+
+if(id==""){
+
+alert("Please Enter Employee ID");
+
+return;
+
+}
+
+fetch(API+"/"+id)
+
+.then(response=>{
+
+if(!response.ok){
+
+throw new Error("Not Found");
+
+}
+
+return response.json();
+
+})
+
+.then(emp=>{
+
+let rows=`
+
+<tr>
+
+<td>${emp.id}</td>
+
+<td>${emp.name}</td>
+
+<td>${emp.age}</td>
+
+<td>${emp.city}</td>
+
+<td>
+
+<button class="edit"
+
+onclick="editEmployee(${emp.id},
+
+'${emp.name}',
+
+${emp.age},
+
+'${emp.city}')">
+
+Edit
+
+</button>
+
+</td>
+
+<td>
+
+<button class="delete"
+
+onclick="deleteEmployee(${emp.id})">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+document.getElementById("employeeTable").innerHTML=rows;
+
+})
+
+.catch(()=>{
+
+alert("Employee Not Found");
+
+});
+
+}
+
+function clearForm(){
+
+document.getElementById("id").value="";
+
+document.getElementById("name").value="";
+
+document.getElementById("age").value="";
+
+document.getElementById("city").value="";
+
+}
+
+document.getElementById("searchId")
+
+.addEventListener("keyup",function(event){
+
+if(event.key==="Enter"){
+
+searchEmployee();
+
+}
+
+});
+
+</script>
+
+</body>
+</html>
